@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import top.csituka.magicaland.client.config.Config;
 import top.csituka.magicaland.client.config.ModelConfig;
@@ -38,7 +39,11 @@ public final class MglSkinClient {
             .build();
     private static final int MAX_RESPONSE = 2_000_000;
 
-    public record RemoteSkin(long id, String name, String username, String data) {}
+    public record RemoteSkin(long id, String name, String username, String data, boolean isPublic) {}
+
+    public record SkinPage(List<RemoteSkin> items, int total, int page, int limit) {
+        public int pages() { return Math.max(1, (int) Math.ceil((double) total / limit)); }
+    }
 
     private MglSkinClient() {}
 
@@ -48,6 +53,13 @@ public final class MglSkinClient {
     }
 
     public static String username() { return Config.getInstance().mglSkinUsername; }
+
+    public static void logout() {
+        Config config = Config.getInstance();
+        config.mglSkinToken = "";
+        config.mglSkinUsername = "";
+        Config.save();
+    }
 
     public static ModelConfig parseModel(RemoteSkin skin) {
         if (skin == null || skin.data() == null || skin.data().length() > 1_000_000) return null;
@@ -69,18 +81,62 @@ public final class MglSkinClient {
                 List<RemoteSkin> result = new ArrayList<>();
                 if (items != null) for (JsonElement element : items) {
                     JsonObject item = element.getAsJsonObject();
-                    result.add(new RemoteSkin(item.get("id").getAsLong(), item.get("name").getAsString(),
-                            item.has("username") ? item.get("username").getAsString() : "", item.get("data").getAsString()));
+                    result.add(readSkin(item));
                 }
                 onGameThread(() -> success.accept(result));
             } catch (RuntimeException error) {
-                onGameThread(() -> failure.accept("服务返回了无效数据"));
+                onGameThread(() -> failure.accept(message("invalid_response")));
             }
         }, failure);
     }
 
+    public static void fetchCloudSkins(int page, Consumer<SkinPage> success, Consumer<String> failure) {
+        if (!isLoggedIn()) { failure.accept(message("login_required")); return; }
+        request("GET", "/api/account/skins?page=" + Math.max(1, page), null, response -> {
+            try {
+                JsonObject root = JsonParser.parseString(response).getAsJsonObject();
+                List<RemoteSkin> items = new ArrayList<>();
+                for (JsonElement element : root.getAsJsonArray("items")) items.add(readSkin(element.getAsJsonObject()));
+                SkinPage result = new SkinPage(List.copyOf(items), root.get("total").getAsInt(),
+                        root.get("page").getAsInt(), root.get("limit").getAsInt());
+                if (result.total() < 0 || result.page() < 1 || result.limit() < 1)
+                    throw new IllegalArgumentException("Invalid page");
+                onGameThread(() -> success.accept(result));
+            } catch (RuntimeException error) {
+                onGameThread(() -> failure.accept(message("invalid_response")));
+            }
+        }, failure);
+    }
+
+    public static void setPublic(long id, boolean isPublic, Consumer<Boolean> success, Consumer<String> failure) {
+        if (!isLoggedIn()) { failure.accept(message("login_required")); return; }
+        JsonObject body = new JsonObject();
+        body.addProperty("isPublic", isPublic);
+        request("PATCH", "/api/account/skins/" + id, GSON.toJson(body), response -> {
+            try {
+                boolean updated = readVisibility(JsonParser.parseString(response).getAsJsonObject());
+                onGameThread(() -> success.accept(updated));
+            } catch (RuntimeException error) {
+                onGameThread(() -> failure.accept(message("invalid_response")));
+            }
+        }, failure);
+    }
+
+    private static RemoteSkin readSkin(JsonObject item) {
+        return new RemoteSkin(item.get("id").getAsLong(), item.get("name").getAsString(),
+                item.has("username") ? item.get("username").getAsString() : "",
+                item.get("data").getAsString(), readVisibility(item));
+    }
+
+    private static boolean readVisibility(JsonObject item) {
+        JsonElement value = item.get("isPublic");
+        if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isBoolean())
+            throw new IllegalArgumentException("Missing preset visibility");
+        return value.getAsBoolean();
+    }
+
     public static void upload(ModelConfig model, Consumer<String> success, Consumer<String> failure) {
-        if (!isLoggedIn()) { failure.accept("请先登录共享服务"); return; }
+        if (!isLoggedIn()) { failure.accept(message("login_required")); return; }
         JsonObject body = new JsonObject();
         body.addProperty("name", model.name);
         body.addProperty("data", GSON.toJson(model));
@@ -89,7 +145,7 @@ public final class MglSkinClient {
                 String name = JsonParser.parseString(response).getAsJsonObject().get("name").getAsString();
                 onGameThread(() -> success.accept(name));
             } catch (RuntimeException error) {
-                onGameThread(() -> failure.accept("上传响应无效"));
+                onGameThread(() -> failure.accept(message("invalid_response")));
             }
         }, failure);
     }
@@ -105,7 +161,7 @@ public final class MglSkinClient {
             String url = baseUrl() + "/minecraft?callback=" + encode(callback) + "&state=" + encode(state);
             Util.getOperatingSystem().open(URI.create(url));
         } catch (Exception error) {
-            failure.accept("无法打开登录页面");
+            failure.accept(message("login_open_error"));
         }
     }
 
@@ -116,15 +172,15 @@ public final class MglSkinClient {
             String code = queryValue(query, "code");
             String state = queryValue(query, "state");
             if (code == null || !expectedState.equals(state)) {
-                String message = "登录回调无效，请返回游戏重试。";
+                String message = message("login_callback_invalid");
                 onGameThread(() -> failure.accept(message));
                 sendCallbackResponse(exchange, 400, message);
             } else {
-                sendCallbackResponse(exchange, 200, "登录完成，可以返回游戏。 ");
+                sendCallbackResponse(exchange, 200, message("login_return"));
                 exchangeToken(code, success, failure);
             }
         } catch (IOException error) {
-            onGameThread(() -> failure.accept("登录回调处理失败"));
+            onGameThread(() -> failure.accept(message("login_callback_error")));
         } finally {
             exchange.close();
             server.stop(0);
@@ -145,13 +201,17 @@ public final class MglSkinClient {
         request("POST", "/api/auth/minecraft/token", GSON.toJson(body), response -> {
             try {
                 JsonObject root = JsonParser.parseString(response).getAsJsonObject();
-                Config config = Config.getInstance();
-                config.mglSkinToken = root.get("token").getAsString();
-                config.mglSkinUsername = root.getAsJsonObject("user").get("username").getAsString();
-                Config.save();
-                onGameThread(() -> success.accept(config.mglSkinUsername));
+                String token = root.get("token").getAsString();
+                String username = root.getAsJsonObject("user").get("username").getAsString();
+                onGameThread(() -> {
+                    Config config = Config.getInstance();
+                    config.mglSkinToken = token;
+                    config.mglSkinUsername = username;
+                    Config.save();
+                    success.accept(username);
+                });
             } catch (RuntimeException error) {
-                onGameThread(() -> failure.accept("登录令牌无效"));
+                onGameThread(() -> failure.accept(message("login_token_invalid")));
             }
         }, failure);
     }
@@ -160,6 +220,7 @@ public final class MglSkinClient {
             Consumer<String> failure) {
         try {
             HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl() + path))
+                    .timeout(Duration.ofSeconds(30))
                     .header("Accept", "application/json")
                     .header("User-Agent", "Magical-Land/" + modVersion());
             String token = Config.getInstance().mglSkinToken;
@@ -170,20 +231,25 @@ public final class MglSkinClient {
             HTTP.sendAsync(builder.build(), HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8))
                     .thenAccept(response -> {
                         if (response.body().length() > MAX_RESPONSE || response.statusCode() / 100 != 2) {
-                            onGameThread(() -> failure.accept("服务请求失败（" + response.statusCode() + "）"));
+                            onGameThread(() -> failure.accept(response.statusCode() == 401
+                                    ? message("login_expired") : message("request_failed", response.statusCode())));
                         } else success.accept(response.body());
             }).exceptionally(error -> {
                 Throwable cause = error.getCause() == null ? error : error.getCause();
                 LOGGER.warn("MGL Skin request failed: {}", cause.toString());
-                onGameThread(() -> failure.accept("无法连接共享服务：" + cause.getClass().getSimpleName()));
+                onGameThread(() -> failure.accept(message("connection_failed")));
                 return null;
             });
         } catch (RuntimeException error) {
-            onGameThread(() -> failure.accept("服务地址无效"));
+            onGameThread(() -> failure.accept(message("invalid_url")));
         }
     }
 
     private static void onGameThread(Runnable action) { MinecraftClient.getInstance().execute(action); }
+
+    private static String message(String key, Object... args) {
+        return Text.translatable("text.magicaland.mglskin." + key, args).getString();
+    }
 
     private static String modVersion() {
         return "0.3.5";

@@ -47,9 +47,10 @@ public final class MglSkinDetailScreen extends Screen implements ViewCube.Rotati
         int buttonWidth = Math.max(1, (infoWidth - 4) / 2);
         addDrawableChild(new CustomButton(infoX, height - 34, buttonWidth, 20,
                 text("back"), false, button -> close()));
-        addDrawableChild(new CustomButton(infoX + buttonWidth + 4, height - 34,
+        CustomButton importButton = addDrawableChild(new CustomButton(infoX + buttonWidth + 4, height - 34,
                 infoWidth - buttonWidth - 4, 20,
                 text("import"), false, button -> openImportName()));
+        importButton.active = preview != null && !ModelManager.isEditing();
     }
 
     private void openImportName() {
@@ -200,6 +201,7 @@ public final class MglSkinDetailScreen extends Screen implements ViewCube.Rotati
                 return;
             }
             parent.importModel(draft.trim());
+            client.setScreen(parent);
         }
 
         @Override

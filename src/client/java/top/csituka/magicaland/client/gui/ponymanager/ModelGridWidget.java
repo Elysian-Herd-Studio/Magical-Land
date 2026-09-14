@@ -14,7 +14,9 @@ import top.csituka.magicaland.client.gui.ponycustom.CustomizationLayout.Rect;
 import top.csituka.magicaland.client.gui.ponycustom.PonyStyleThumbnails;
 
 public final class ModelGridWidget extends ClickableWidget {
-    public record ModelEntry(String name, ModelConfig preview) {}
+    public record ModelEntry(String key, String name, ModelConfig preview, Text badge) {
+        public ModelEntry(String name, ModelConfig preview) { this(name, name, preview, null); }
+    }
 
     private final List<ModelEntry> models;
     private final ModelGridLayout layout;
@@ -42,7 +44,7 @@ public final class ModelGridWidget extends ClickableWidget {
 
     private int selectedIndex() {
         String selected = selectedName.get();
-        for (int i = 0; i < models.size(); i++) if (models.get(i).name().equals(selected)) return i;
+        for (int i = 0; i < models.size(); i++) if (models.get(i).key().equals(selected)) return i;
         return -1;
     }
 
@@ -87,6 +89,12 @@ public final class ModelGridWidget extends ClickableWidget {
                     context.drawCenteredTextWithShadow(font, "!", x + width / 2, y + 30, (textAlpha << 24) | 0xFF9999);
                 }
                 if (i == selected) context.drawTextWithShadow(font, "✓", x + 4, y + 4, (textAlpha << 24) | 0xFFFFFF);
+                if (model.badge() != null) {
+                    String badge = font.trimToWidth(model.badge().getString(), Math.max(1, width - 22));
+                    int badgeX = x + width - font.getWidth(badge) - 4;
+                    context.fill(badgeX - 2, y + 2, x + width - 2, y + 13, (bgAlpha << 24));
+                    context.drawTextWithShadow(font, badge, badgeX, y + 4, (textAlpha << 24) | 0xDDDDDD);
+                }
                 context.drawCenteredTextWithShadow(font, font.trimToWidth(model.name(), width - 8),
                         x + width / 2, y + ModelGridLayout.CARD_HEIGHT - 12,
                         (textAlpha << 24) | (model.preview() == null ? 0xFF9999 : 0xFFFFFF));
@@ -169,7 +177,7 @@ public final class ModelGridWidget extends ClickableWidget {
 
     private void choose() {
         if (cursor < 0 || cursor >= models.size()) return;
-        onSelect.accept(models.get(cursor).name());
+        onSelect.accept(models.get(cursor).key());
         playDownSound(MinecraftClient.getInstance().getSoundManager());
     }
 
@@ -189,7 +197,12 @@ public final class ModelGridWidget extends ClickableWidget {
 
     @Override
     protected void appendClickableNarrations(NarrationMessageBuilder builder) {
-        if (!models.isEmpty()) builder.put(NarrationPart.TITLE, Text.literal(models.get(cursor).name()));
+        if (!models.isEmpty()) {
+            ModelEntry model = models.get(cursor);
+            Text label = Text.literal(model.name());
+            if (model.badge() != null) label = label.copy().append(" · ").append(model.badge());
+            builder.put(NarrationPart.TITLE, label);
+        }
         builder.put(NarrationPart.USAGE, text("select_hint"));
     }
 

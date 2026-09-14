@@ -14,13 +14,13 @@ import java.util.Comparator;
 import java.util.List;
 
 public final class MglSkinUploadScreen extends Screen {
-    private final MglSkinScreen parent;
+    private final MglCloudPresetScreen parent;
     private String selectedName = "";
     private ModelGridWidget modelGrid;
     private CustomButton uploadButton;
     private boolean uploading;
 
-    public MglSkinUploadScreen(MglSkinScreen parent) {
+    public MglSkinUploadScreen(MglCloudPresetScreen parent) {
         super(text("upload_title"));
         this.parent = parent;
     }
@@ -35,7 +35,7 @@ public final class MglSkinUploadScreen extends Screen {
                 .map(name -> new ModelGridWidget.ModelEntry(name, ModelManager.getModelPreview(name)))
                 .toList();
         modelGrid = addDrawableChild(new ModelGridWidget(
-                new Rect(left, 48, contentWidth, Math.max(20, height - 90)), entries,
+                new Rect(left, 70, contentWidth, Math.max(20, height - 112)), entries,
                 () -> selectedName, this::selectModel));
         modelGrid.active = !uploading;
         int half = (contentWidth - 4) / 2;
@@ -65,10 +65,10 @@ public final class MglSkinUploadScreen extends Screen {
         uploadButton.active = false;
         MglSkinClient.upload(model, name -> {
             parent.uploadComplete(name);
-            client.setScreen(parent);
+            if (client.currentScreen == this) client.setScreen(parent);
         }, error -> {
             parent.uploadFailed(error);
-            client.setScreen(parent);
+            if (client.currentScreen == this) client.setScreen(parent);
         });
     }
 
@@ -77,6 +77,10 @@ public final class MglSkinUploadScreen extends Screen {
         renderBackground(context);
         context.drawCenteredTextWithShadow(textRenderer,
                 uploading ? text("uploading") : title, width / 2, 20, 0xFFFFFFFF);
+        int contentWidth = Math.min(460, width - 24);
+        var lines = textRenderer.wrapLines(text("upload_private_hint"), contentWidth);
+        for (int i = 0; i < Math.min(3, lines.size()); i++) context.drawCenteredTextWithShadow(textRenderer,
+                lines.get(i), width / 2, 36 + i * textRenderer.fontHeight, 0xFFAAAAAA);
         super.render(context, mouseX, mouseY, delta);
     }
 

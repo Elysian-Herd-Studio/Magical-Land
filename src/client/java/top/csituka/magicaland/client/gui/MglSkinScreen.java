@@ -3,7 +3,6 @@ package top.csituka.magicaland.client.gui;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
-import top.csituka.magicaland.client.config.ModelManager;
 import top.csituka.magicaland.client.gui.ponycustom.CustomizationLayout.Rect;
 import top.csituka.magicaland.client.gui.ponymanager.ModelGridWidget;
 import top.csituka.magicaland.client.gui.widget.CustomButton;
@@ -44,9 +43,9 @@ public final class MglSkinScreen extends Screen {
         List<ModelGridWidget.ModelEntry> entries = new ArrayList<>();
         Map<String, MglSkinClient.RemoteSkin> byKey = new LinkedHashMap<>();
         for (MglSkinClient.RemoteSkin skin : skins) {
-            String key = displayKey(skin, byKey);
+            String key = Long.toString(skin.id());
             byKey.put(key, skin);
-            entries.add(new ModelGridWidget.ModelEntry(key, MglSkinClient.parseModel(skin)));
+            entries.add(new ModelGridWidget.ModelEntry(key, skin.name(), MglSkinClient.parseModel(skin), null));
         }
         skinByKey = Map.copyOf(byKey);
         if (!entries.isEmpty()) {
@@ -59,26 +58,15 @@ public final class MglSkinScreen extends Screen {
         }
 
         int actionY = height - 34;
-        addDrawableChild(new CustomButton(left, actionY, 112, 20,
-                MglSkinClient.isLoggedIn() ? text("logout") : text("login"), false,
-                button -> { if (MglSkinClient.isLoggedIn()) logout(); else login(); }));
-        CustomButton upload = new CustomButton(left + contentWidth - 112, actionY, 112, 20,
-                text("upload"), false, button -> client.setScreen(new MglSkinUploadScreen(this)));
-        upload.active = MglSkinClient.isLoggedIn() && ModelManager.getActiveModel() != null;
-        addDrawableChild(upload);
+        addDrawableChild(new CustomButton(width / 2 - 70, actionY, 140, 20,
+                text("cloud_title"), false, button -> {
+                    if (parent instanceof MglCloudPresetScreen) close();
+                    else client.setScreen(new MglCloudPresetScreen(this));
+                }));
         if (!loaded && !loading) refresh();
     }
 
-    private String displayKey(MglSkinClient.RemoteSkin skin, Map<String, MglSkinClient.RemoteSkin> existing) {
-        String base = skin.name().isBlank() ? "preset-" + skin.id() : skin.name();
-        String key = base;
-        if (existing.containsKey(key)) {
-            String suffix = skin.username().isBlank() ? String.valueOf(skin.id()) : skin.username();
-            key = base + " · " + suffix;
-        }
-        while (existing.containsKey(key)) key = base + " #" + skin.id();
-        return key;
-    }
+    void invalidate() { loaded = false; }
 
     private void refresh() {
         if (loading) return;
@@ -88,8 +76,10 @@ public final class MglSkinScreen extends Screen {
             skins = List.copyOf(result);
             loaded = true;
             loading = false;
-            clearChildren();
-            init();
+            if (client.currentScreen == this) {
+                clearChildren();
+                init();
+            }
         }, error -> {
             loading = false;
             status = error;
@@ -102,36 +92,10 @@ public final class MglSkinScreen extends Screen {
         if (skin != null) client.setScreen(new MglSkinDetailScreen(this, skin));
     }
 
-    private void login() {
-        status = text("opening_login").getString();
-        MglSkinClient.beginLogin(username -> {
-            status = Text.translatable("text.magicaland.mglskin.logged_in", username).getString();
-            clearChildren();
-            init();
-        }, error -> status = error);
-    }
-
-    private void logout() {
-        var config = top.csituka.magicaland.client.config.Config.getInstance();
-        config.mglSkinToken = "";
-        config.mglSkinUsername = "";
-        top.csituka.magicaland.client.config.Config.save();
-        clearChildren();
-        init();
-    }
-
-    void uploadComplete(String name) {
-        refresh();
-        status = Text.translatable("text.magicaland.mglskin.uploaded", name).getString();
-    }
-
-    void uploadFailed(String error) {
-        status = error;
-    }
-
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         renderBackground(context);
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 16, 0xFFFFFFFF);
         if (loading) {
             context.drawCenteredTextWithShadow(textRenderer, text("loading"), width / 2, 42, 0xFFAAAAAA);
         } else if (skins.isEmpty()) {
