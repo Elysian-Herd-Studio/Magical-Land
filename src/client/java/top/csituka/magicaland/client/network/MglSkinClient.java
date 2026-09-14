@@ -38,8 +38,11 @@ public final class MglSkinClient {
             .followRedirects(HttpClient.Redirect.NORMAL)
             .build();
     private static final int MAX_RESPONSE = 2_000_000;
+    private static final int MAX_AVATAR_RESPONSE = 256_000;
 
     public record RemoteSkin(long id, String name, String username, String data, boolean isPublic) {}
+
+    public record AccountProfile(String username, boolean hasAvatar) {}
 
     public record SkinPage(List<RemoteSkin> items, int total, int page, int limit) {
         public int pages() { return Math.max(1, (int) Math.ceil((double) total / limit)); }
@@ -59,6 +62,56 @@ public final class MglSkinClient {
         config.mglSkinToken = "";
         config.mglSkinUsername = "";
         Config.save();
+    }
+
+    public static void fetchAccount(Consumer<AccountProfile> success, Consumer<String> failure) {
+        if (!isLoggedIn()) { failure.accept(message("login_required")); return; }
+        request("GET", "/api/auth/minecraft/profile", null, response -> {
+            try {
+                JsonObject root = JsonParser.parseString(response).getAsJsonObject();
+                String username = root.get("username").getAsString();
+                JsonElement hasAvatar = root.get("hasAvatar");
+                if (username.isBlank() || hasAvatar == null || !hasAvatar.isJsonPrimitive()
+                        || !hasAvatar.getAsJsonPrimitive().isBoolean())
+                    throw new IllegalArgumentException("Invalid account profile");
+                AccountProfile profile = new AccountProfile(username, hasAvatar.getAsBoolean());
+                onGameThread(() -> success.accept(profile));
+            } catch (RuntimeException error) {
+                onGameThread(() -> failure.accept(message("invalid_response")));
+            }
+        }, failure);
+    }
+
+    public static void fetchAvatar(Consumer<byte[]> success, Consumer<String> failure) {
+        if (!isLoggedIn()) { failure.accept(message("login_required")); return; }
+        try {
+            HttpRequest request = requestBuilder("/api/auth/minecraft/avatar")
+                    .header("Accept", "image/png").GET().build();
+            HTTP.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray()).thenAccept(response -> {
+                if (response.statusCode() / 100 != 2 || response.body().length > MAX_AVATAR_RESPONSE) {
+                    onGameThread(() -> failure.accept(message("avatar_error")));
+                } else {
+                    onGameThread(() -> success.accept(response.body()));
+                }
+            }).exceptionally(error -> {
+                LOGGER.warn("MGL Skin avatar request failed: {}", error.toString());
+                onGameThread(() -> failure.accept(message("avatar_error")));
+                return null;
+            });
+        } catch (RuntimeException error) {
+            onGameThread(() -> failure.accept(message("invalid_url")));
+        }
+    }
+
+    public static void openAccountPage(Consumer<String> failure) {
+        try {
+            URI uri = URI.create(baseUrl() + "/account");
+            if ((!"http".equalsIgnoreCase(uri.getScheme()) && !"https".equalsIgnoreCase(uri.getScheme()))
+                    || uri.getHost() == null) throw new IllegalArgumentException("Invalid service URL");
+            Util.getOperatingSystem().open(uri);
+        } catch (RuntimeException error) {
+            failure.accept(message("account_open_error"));
+        }
     }
 
     public static ModelConfig parseModel(RemoteSkin skin) {
@@ -219,12 +272,7 @@ public final class MglSkinClient {
     private static void request(String method, String path, String body, Consumer<String> success,
             Consumer<String> failure) {
         try {
-            HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl() + path))
-                    .timeout(Duration.ofSeconds(30))
-                    .header("Accept", "application/json")
-                    .header("User-Agent", "Magical-Land/" + modVersion());
-            String token = Config.getInstance().mglSkinToken;
-            if (token != null && !token.isBlank()) builder.header("Authorization", "Bearer " + token);
+            HttpRequest.Builder builder = requestBuilder(path).header("Accept", "application/json");
             if (body == null) builder.method(method, HttpRequest.BodyPublishers.noBody());
             else builder.method(method, HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
                     .header("Content-Type", "application/json");
@@ -243,6 +291,15 @@ public final class MglSkinClient {
         } catch (RuntimeException error) {
             onGameThread(() -> failure.accept(message("invalid_url")));
         }
+    }
+
+    private static HttpRequest.Builder requestBuilder(String path) {
+        HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(baseUrl() + path))
+                .timeout(Duration.ofSeconds(30))
+                .header("User-Agent", "Magical-Land/" + modVersion());
+        String token = Config.getInstance().mglSkinToken;
+        if (token != null && !token.isBlank()) builder.header("Authorization", "Bearer " + token);
+        return builder;
     }
 
     private static void onGameThread(Runnable action) { MinecraftClient.getInstance().execute(action); }

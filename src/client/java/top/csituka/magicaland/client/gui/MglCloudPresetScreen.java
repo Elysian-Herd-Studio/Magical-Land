@@ -19,7 +19,7 @@ public final class MglCloudPresetScreen extends Screen {
     private final Screen parent;
     private List<RemoteSkin> skins = List.of();
     private ModelGridWidget modelGrid;
-    private CustomButton refreshButton, loginButton, detailsButton, visibilityButton, uploadButton;
+    private CustomButton refreshButton, sessionButton, detailsButton, visibilityButton, uploadButton;
     private CustomButton previousButton, nextButton;
     private String selectedKey = "";
     private String accountToken, serviceUrl;
@@ -39,7 +39,10 @@ public final class MglCloudPresetScreen extends Screen {
     protected void init() {
         super.init();
         if (modelGrid != null) listScroll = modelGrid.getScrollAmount();
-        if (!sameAccount()) resetAccount();
+        if (!sameAccount()) {
+            status = Text.empty();
+            resetAccount();
+        }
         loginRequired = !MglSkinClient.isLoggedIn();
         if (loginRequired) {
             initLogin();
@@ -53,8 +56,8 @@ public final class MglCloudPresetScreen extends Screen {
                 text("back"), false, button -> close()));
         addDrawableChild(new CustomButton(left, 30, 112, 20,
                 text("title"), false, button -> client.setScreen(new MglSkinScreen(this))));
-        loginButton = addDrawableChild(new CustomButton(left + contentWidth - 112, 30, 112, 20,
-                text("logout"), false, button -> loginOrLogout()));
+        sessionButton = addDrawableChild(new CustomButton(left + contentWidth - 112, 30, 112, 20,
+                text("account_title"), false, button -> client.setScreen(new MglSkinAccountScreen(this))));
 
         var entries = skins.stream().map(skin -> new ModelGridWidget.ModelEntry(
                 Long.toString(skin.id()), skin.name(), MglSkinClient.parseModel(skin),
@@ -90,15 +93,15 @@ public final class MglCloudPresetScreen extends Screen {
         int formWidth = Math.min(280, width - 32);
         int left = (width - formWidth) / 2;
         int actionY = height / 2;
-        loginButton = addDrawableChild(new CustomButton(left, actionY, formWidth, 24,
-                text("login"), false, button -> loginOrLogout()));
+        sessionButton = addDrawableChild(new CustomButton(left, actionY, formWidth, 24,
+                text("login"), false, button -> login()));
         int half = (formWidth - 4) / 2;
         addDrawableChild(new CustomButton(left, actionY + 30, half, 20,
                 text("title"), false, button -> client.setScreen(new MglSkinScreen(this))));
         addDrawableChild(new CustomButton(left + half + 4, actionY + 30, formWidth - half - 4, 20,
                 text("back"), false, button -> close()));
         updateButtons();
-        setInitialFocus(loginButton);
+        setInitialFocus(sessionButton);
     }
 
     private boolean sameAccount() {
@@ -124,7 +127,7 @@ public final class MglCloudPresetScreen extends Screen {
     }
 
     private void updateButtons() {
-        if (loginButton != null) loginButton.active = !changingVisibility && !openingLogin;
+        if (sessionButton != null) sessionButton.active = !changingVisibility && !openingLogin;
         if (refreshButton == null) return;
         boolean idle = !loading && !changingVisibility;
         boolean loggedIn = MglSkinClient.isLoggedIn();
@@ -191,14 +194,8 @@ public final class MglCloudPresetScreen extends Screen {
         });
     }
 
-    private void loginOrLogout() {
-        if (MglSkinClient.isLoggedIn()) {
-            MglSkinClient.logout();
-            resetAccount();
-            status = Text.empty();
-            rebuild();
-            return;
-        }
+    private void login() {
+        if (MglSkinClient.isLoggedIn() || openingLogin) return;
         openingLogin = true;
         status = text("opening_login");
         updateButtons();
