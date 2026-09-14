@@ -27,7 +27,7 @@ public final class MglCloudPresetScreen extends Screen {
     private int page = 1;
     private int pages = 1;
     private int requestVersion;
-    private boolean loaded, connected, loading, changingVisibility, openingLogin;
+    private boolean loaded, connected, loading, changingVisibility, openingLogin, loginRequired;
     private double listScroll;
 
     public MglCloudPresetScreen(Screen parent) {
@@ -40,6 +40,11 @@ public final class MglCloudPresetScreen extends Screen {
         super.init();
         if (modelGrid != null) listScroll = modelGrid.getScrollAmount();
         if (!sameAccount()) resetAccount();
+        loginRequired = !MglSkinClient.isLoggedIn();
+        if (loginRequired) {
+            initLogin();
+            return;
+        }
         int contentWidth = Math.min(520, width - 24);
         int left = (width - contentWidth) / 2;
         refreshButton = addDrawableChild(new CustomButton(left, 6, 64, 20,
@@ -49,7 +54,7 @@ public final class MglCloudPresetScreen extends Screen {
         addDrawableChild(new CustomButton(left, 30, 112, 20,
                 text("title"), false, button -> client.setScreen(new MglSkinScreen(this))));
         loginButton = addDrawableChild(new CustomButton(left + contentWidth - 112, 30, 112, 20,
-                MglSkinClient.isLoggedIn() ? text("logout") : text("login"), false, button -> loginOrLogout()));
+                text("logout"), false, button -> loginOrLogout()));
 
         var entries = skins.stream().map(skin -> new ModelGridWidget.ModelEntry(
                 Long.toString(skin.id()), skin.name(), MglSkinClient.parseModel(skin),
@@ -76,7 +81,24 @@ public final class MglCloudPresetScreen extends Screen {
         uploadButton = addDrawableChild(new CustomButton(left + contentWidth - 112, height - 32, 112, 20,
                 text("upload"), false, button -> client.setScreen(new MglSkinUploadScreen(this))));
         updateButtons();
-        if (!loaded && MglSkinClient.isLoggedIn()) refresh(1);
+        if (!loaded) refresh(1);
+    }
+
+    private void initLogin() {
+        modelGrid = null;
+        refreshButton = null;
+        int formWidth = Math.min(280, width - 32);
+        int left = (width - formWidth) / 2;
+        int actionY = height / 2;
+        loginButton = addDrawableChild(new CustomButton(left, actionY, formWidth, 24,
+                text("login"), false, button -> loginOrLogout()));
+        int half = (formWidth - 4) / 2;
+        addDrawableChild(new CustomButton(left, actionY + 30, half, 20,
+                text("title"), false, button -> client.setScreen(new MglSkinScreen(this))));
+        addDrawableChild(new CustomButton(left + half + 4, actionY + 30, formWidth - half - 4, 20,
+                text("back"), false, button -> close()));
+        updateButtons();
+        setInitialFocus(loginButton);
     }
 
     private boolean sameAccount() {
@@ -102,12 +124,12 @@ public final class MglCloudPresetScreen extends Screen {
     }
 
     private void updateButtons() {
+        if (loginButton != null) loginButton.active = !changingVisibility && !openingLogin;
         if (refreshButton == null) return;
         boolean idle = !loading && !changingVisibility;
         boolean loggedIn = MglSkinClient.isLoggedIn();
         RemoteSkin selected = selectedSkin();
         refreshButton.active = idle && loggedIn;
-        loginButton.active = !changingVisibility && !openingLogin;
         detailsButton.active = idle && selected != null;
         visibilityButton.active = idle && loggedIn && selected != null;
         visibilityButton.setMessage(text(selected != null && selected.isPublic() ? "make_private" : "make_public"));
@@ -222,20 +244,38 @@ public final class MglCloudPresetScreen extends Screen {
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float delta) {
         renderBackground(context);
+        if (loginRequired) {
+            renderLogin(context);
+            super.render(context, mouseX, mouseY, delta);
+            return;
+        }
         int contentWidth = Math.min(520, width - 24);
         int left = (width - contentWidth) / 2;
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xFFFFFFFF);
         if (MglSkinClient.isLoggedIn()) context.drawCenteredTextWithShadow(textRenderer,
                 textRenderer.trimToWidth(MglSkinClient.username(), Math.max(1, contentWidth - 232)),
                 width / 2, 36, 0xFFAAAAAA);
-        if (skins.isEmpty() && (!MglSkinClient.isLoggedIn() || loading || connected)) context.drawCenteredTextWithShadow(textRenderer,
-                !MglSkinClient.isLoggedIn() ? text("cloud_login_hint") : loading ? text("loading") : text("cloud_empty"),
+        if (skins.isEmpty() && (loading || connected)) context.drawCenteredTextWithShadow(textRenderer,
+                loading ? text("loading") : text("cloud_empty"),
                 width / 2, 54 + Math.max(20, height - 140) / 2 - 4, 0xFFAAAAAA);
         var lines = textRenderer.wrapLines(status, contentWidth);
         for (int i = 0; i < Math.min(2, lines.size()); i++) context.drawCenteredTextWithShadow(textRenderer,
                 lines.get(i), width / 2, height - 56 + i * textRenderer.fontHeight, 0xFFCCCCCC);
         context.drawCenteredTextWithShadow(textRenderer, text("page", page, pages), left + 74, height - 26, 0xFFCCCCCC);
         super.render(context, mouseX, mouseY, delta);
+    }
+
+    private void renderLogin(DrawContext context) {
+        int formWidth = Math.min(280, width - 32);
+        int actionY = height / 2;
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, actionY - 48, 0xFFFFFFFF);
+        var hint = textRenderer.wrapLines(text("cloud_login_hint"), formWidth);
+        for (int i = 0; i < hint.size(); i++) context.drawCenteredTextWithShadow(textRenderer,
+                hint.get(i), width / 2, actionY - 28 + i * textRenderer.fontHeight, 0xFFAAAAAA);
+        var lines = textRenderer.wrapLines(status, formWidth);
+        int visibleLines = Math.max(0, (height - actionY - 72) / textRenderer.fontHeight);
+        for (int i = 0; i < Math.min(visibleLines, lines.size()); i++) context.drawCenteredTextWithShadow(textRenderer,
+                lines.get(i), width / 2, actionY + 64 + i * textRenderer.fontHeight, 0xFFCCCCCC);
     }
 
     @Override public void close() { client.setScreen(parent); }
