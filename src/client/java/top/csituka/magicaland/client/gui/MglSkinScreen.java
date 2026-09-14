@@ -22,6 +22,7 @@ public final class MglSkinScreen extends Screen {
     private String selectedKey = "";
     private String status = "";
     private boolean loading;
+    private boolean loaded;
     private double listScroll;
 
     public MglSkinScreen(Screen parent) {
@@ -65,7 +66,7 @@ public final class MglSkinScreen extends Screen {
                 text("upload"), false, button -> client.setScreen(new MglSkinUploadScreen(this)));
         upload.active = MglSkinClient.isLoggedIn() && ModelManager.getActiveModel() != null;
         addDrawableChild(upload);
-        if (skins.isEmpty() && !loading) refresh();
+        if (!loaded && !loading) refresh();
     }
 
     private String displayKey(MglSkinClient.RemoteSkin skin, Map<String, MglSkinClient.RemoteSkin> existing) {
@@ -85,6 +86,7 @@ public final class MglSkinScreen extends Screen {
         status = "";
         MglSkinClient.fetchSkins(result -> {
             skins = List.copyOf(result);
+            loaded = true;
             loading = false;
             clearChildren();
             init();
