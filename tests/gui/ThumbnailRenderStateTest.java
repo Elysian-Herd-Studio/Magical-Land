@@ -1,4 +1,4 @@
-package top.csituka.magicaland.client.gui.ponycustom;
+package top.elysianherd.magicaland.client.gui.ponycustom;
 
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -24,8 +24,8 @@ import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourcePack;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL;
-import top.csituka.magicaland.client.config.ModelConfig;
-import top.csituka.magicaland.client.config.style.PonyStylePart;
+import top.elysianherd.magicaland.client.config.ModelConfig;
+import top.elysianherd.magicaland.client.config.style.PonyStylePart;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL33C.*;
 

@@ -27,7 +27,7 @@
 
 ## 3. 注册表
 
-款式定义集中在 `src/client/java/top/csituka/magicaland/client/config/style/`：
+款式定义集中在 `src/client/java/top/elysianherd/magicaland/client/config/style/`：
 
 - `PonyStylePart.java`：枚举 `FRONT_MANE/BACK_MANE/TAIL/EYE`，携带骨骼名后缀 + 展示层通用名 lang key
 - `PonyStyleDefinition.java`：单个部位款式的不可变数据（part、部位内 id）

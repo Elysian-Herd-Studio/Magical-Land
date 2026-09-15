@@ -1,6 +1,6 @@
-import top.csituka.magicaland.client.gui.ponycustom.StyleGridLayout;
-import top.csituka.magicaland.client.config.style.PonyStyleRegistry;
-import top.csituka.magicaland.client.config.style.PonyStylePart;
+import top.elysianherd.magicaland.client.gui.ponycustom.StyleGridLayout;
+import top.elysianherd.magicaland.client.config.style.PonyStyleRegistry;
+import top.elysianherd.magicaland.client.config.style.PonyStylePart;
 
 public final class StyleGridLayoutTest {
     private static int checks;

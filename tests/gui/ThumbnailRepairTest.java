@@ -1,10 +1,10 @@
-package top.csituka.magicaland.client.gui.ponycustom;
+package top.elysianherd.magicaland.client.gui.ponycustom;
 
 import com.google.gson.Gson;
 import java.lang.reflect.Modifier;
-import top.csituka.magicaland.client.config.ModelConfig;
-import top.csituka.magicaland.client.config.style.PonyStylePart;
-import top.csituka.magicaland.client.config.style.PonyStyleRegistry;
+import top.elysianherd.magicaland.client.config.ModelConfig;
+import top.elysianherd.magicaland.client.config.style.PonyStylePart;
+import top.elysianherd.magicaland.client.config.style.PonyStyleRegistry;
 
 public final class ThumbnailRepairTest {
     private static int checks;

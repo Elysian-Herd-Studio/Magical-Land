@@ -16,8 +16,8 @@ GeckoLib 4.8.3 的 `GeoObjectRenderer` 不自动把 `getTick` 填入动画状态
 
 主预览另从模型资源私有烘焙完整骨骼树，不直接动画化 GeckoLib 的世界共享缓存，也不复用取景／缩略图的静止树。共享缓存对象身份仅用于识别资源重载；重载后重新私有烘焙并把动画处理器绑定到新私有树，避免世界暂停时被预览覆盖姿势。
 
-独立回归入口：`top.csituka.magicaland.client.model.PonyPreviewClockTest`，参数为仓库根目录。需要当前客户端类、GeckoLib 4.8.3 依赖和 `src/main/resources` 在 classpath；未包含游戏启动或整包构建步骤。
+独立回归入口：`top.elysianherd.magicaland.client.model.PonyPreviewClockTest`，参数为仓库根目录。需要当前客户端类、GeckoLib 4.8.3 依赖和 `src/main/resources` 在 classpath；未包含游戏启动或整包构建步骤。
 
-骨骼隔离回归：`top.csituka.magicaland.client.model.PonyPreviewModelIsolationTest`，同样传仓库根目录，离线验证真实骨骼树、动画处理器绑定和重载后的对象隔离。
+骨骼隔离回归：`top.elysianherd.magicaland.client.model.PonyPreviewModelIsolationTest`，同样传仓库根目录，离线验证真实骨骼树、动画处理器绑定和重载后的对象隔离。
 
-鼠标投影回归入口：`top.csituka.magicaland.client.render.PonyGuiGazeTest`，无参数，覆盖上下左右、远端鼠标、GUI 缩放、旋转取景、镜像矩阵、正侧面连续性、暂停平滑、嵌套绘制清理及世界状态隔离。
+鼠标投影回归入口：`top.elysianherd.magicaland.client.render.PonyGuiGazeTest`，无参数，覆盖上下左右、远端鼠标、GUI 缩放、旋转取景、镜像矩阵、正侧面连续性、暂停平滑、嵌套绘制清理及世界状态隔离。

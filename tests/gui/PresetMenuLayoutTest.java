@@ -1,10 +1,10 @@
-import top.csituka.magicaland.client.gui.ponycustom.PresetMenuLayout;
+import top.elysianherd.magicaland.client.gui.ponycustom.PresetMenuLayout;
 
 public final class PresetMenuLayoutTest {
     private static int checks;
     public static void main(String[] args) {
         for(int window=320;window<=1920;window+=8) {
-            var preview=top.csituka.magicaland.client.gui.ponycustom.CustomizationLayout.of(8,31,window-16,201).preview();
+            var preview=top.elysianherd.magicaland.client.gui.ponycustom.CustomizationLayout.of(8,31,window-16,201).preview();
             int width=preview.width()-10;
             var header=PresetMenuLayout.header(width);
             check(header.dropdownWidth()>=52,"narrow window still shows preset text and arrow");

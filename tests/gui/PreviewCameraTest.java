@@ -1,4 +1,4 @@
-import top.csituka.magicaland.client.gui.ponycustom.PreviewCamera;
+import top.elysianherd.magicaland.client.gui.ponycustom.PreviewCamera;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 

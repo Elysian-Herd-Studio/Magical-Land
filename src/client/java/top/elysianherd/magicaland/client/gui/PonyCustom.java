@@ -17,7 +17,6 @@ import top.elysianherd.magicaland.client.api.AppearanceAnatomy;
 import top.elysianherd.magicaland.client.config.ModelConfig;
 import top.elysianherd.magicaland.client.config.ModelManager;
 import top.elysianherd.magicaland.client.config.style.PonyStylePart;
-import top.csituka.magicaland.client.gui.ponycustom.*;
 import top.elysianherd.magicaland.client.gui.ponycustom.*;
 import top.elysianherd.magicaland.client.gui.ponycustom.CustomizationLayout.Rect;
 import top.elysianherd.magicaland.client.gui.widget.ColorPicker;

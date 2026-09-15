@@ -1,4 +1,4 @@
-package top.csituka.magicaland.client.gui.ponycustom;
+package top.elysianherd.magicaland.client.gui.ponycustom;
 
 import com.google.gson.Gson;
 import java.nio.file.Files;
@@ -8,10 +8,10 @@ import software.bernie.geckolib.loading.json.raw.Model;
 import software.bernie.geckolib.loading.object.BakedModelFactory;
 import software.bernie.geckolib.loading.object.GeometryTree;
 import software.bernie.geckolib.util.JsonUtil;
-import top.csituka.magicaland.client.config.ModelConfig;
-import top.csituka.magicaland.client.config.style.PonyStylePart;
-import top.csituka.magicaland.client.config.style.PonyStyleRegistry;
-import top.csituka.magicaland.client.render.ManePalette;
+import top.elysianherd.magicaland.client.config.ModelConfig;
+import top.elysianherd.magicaland.client.config.style.PonyStylePart;
+import top.elysianherd.magicaland.client.config.style.PonyStyleRegistry;
+import top.elysianherd.magicaland.client.render.ManePalette;
 
 public final class PreviewGeometryBoundsTest {
     private static int checks;

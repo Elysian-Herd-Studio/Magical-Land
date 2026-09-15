@@ -258,8 +258,8 @@ A 从兴奋转成放松的笑，再让出一点位置。群像不做整齐同步
 
 代码与设计依据：
 
-- [Gameplay 现有能力入口](https://github.com/Elysian-Herd-Studio/Magical-Land-Gameplay/blob/1.20.1-Fabric/src/client/java/top/csituka/magicaland/gameplay/client/AbilityClient.java)
-- [独角兽悬浮服务端](https://github.com/Elysian-Herd-Studio/Magical-Land-Gameplay/blob/1.20.1-Fabric/src/main/java/top/csituka/magicaland/gameplay/levitation/UnicornLevitationServer.java)
+- [Gameplay 现有能力入口](https://github.com/Elysian-Herd-Studio/Magical-Land-Gameplay/blob/1.20.1-Fabric/src/client/java/top/elysianherd/magicaland/gameplay/client/AbilityClient.java)
+- [独角兽悬浮服务端](https://github.com/Elysian-Herd-Studio/Magical-Land-Gameplay/blob/1.20.1-Fabric/src/main/java/top/elysianherd/magicaland/gameplay/levitation/UnicornLevitationServer.java)
 - [三族能力设计](https://github.com/Elysian-Herd-Studio/Magical-Land-Gameplay/blob/1.20.1-Fabric/docs/tribe-core-abilities.md)
 - [Gameplay 待办](https://github.com/Elysian-Herd-Studio/Magical-Land-Gameplay/blob/1.20.1-Fabric/TODO.md)
 

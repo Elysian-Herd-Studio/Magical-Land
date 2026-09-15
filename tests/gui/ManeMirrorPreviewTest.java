@@ -1,4 +1,4 @@
-package top.csituka.magicaland.client.gui.ponycustom;
+package top.elysianherd.magicaland.client.gui.ponycustom;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -10,10 +10,10 @@ import software.bernie.geckolib.loading.object.BakedModelFactory;
 import software.bernie.geckolib.loading.object.GeometryTree;
 import software.bernie.geckolib.util.JsonUtil;
 import software.bernie.geckolib.util.RenderUtils;
-import top.csituka.magicaland.client.config.ModelConfig;
-import top.csituka.magicaland.client.config.style.PonyStylePart;
-import top.csituka.magicaland.client.config.style.PonyStyleRegistry;
-import top.csituka.magicaland.client.render.ManeMirror;
+import top.elysianherd.magicaland.client.config.ModelConfig;
+import top.elysianherd.magicaland.client.config.style.PonyStylePart;
+import top.elysianherd.magicaland.client.config.style.PonyStyleRegistry;
+import top.elysianherd.magicaland.client.render.ManeMirror;
 
 public final class ManeMirrorPreviewTest {
     private static int checks;

@@ -35,7 +35,7 @@ Magical Land 仓库：
 .\gradlew.bat publishMavenJavaPublicationToLocalDevelopmentRepository
 ```
 
-默认发布到 `build/repo`，坐标为 `top.csituka:magicaland:<mod_version>`。其中 `mod_version` 取自主仓库 `gradle.properties`。同时提供普通安装 JAR、`api`、`sources` 和 `api-sources` 产物；运行时使用完整主模组。
+默认发布到 `build/repo`，坐标为 `top.elysianherd:magicaland:<mod_version>`。其中 `mod_version` 取自主仓库 `gradle.properties`。同时提供普通安装 JAR、`api`、`sources` 和 `api-sources` 产物；运行时使用完整主模组。
 
 Gameplay 仓库：
 

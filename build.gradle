@@ -42,7 +42,7 @@ def apiJar = tasks.register('apiJar', Jar) {
     dependsOn tasks.named('remapJar')
     archiveClassifier = 'api'
     from({ zipTree(tasks.named('remapJar').get().archiveFile.get().asFile) }) {
-        include 'top/csituka/magicaland/api/**'
+        include 'top/elysianherd/magicaland/api/**'
     }
     manifest {
         attributes 'Fabric-Loom-Remap': 'true', 'Magicaland-API-Major': '1'
@@ -54,7 +54,7 @@ def apiSourcesJar = tasks.register('apiSourcesJar', Jar) {
     dependsOn tasks.named('remapSourcesJar')
     archiveClassifier = 'api-sources'
     from({ zipTree(tasks.named('remapSourcesJar').get().archiveFile.get().asFile) }) {
-        include 'top/csituka/magicaland/api/**'
+        include 'top/elysianherd/magicaland/api/**'
     }
     from('LICENSE.txt')
 }

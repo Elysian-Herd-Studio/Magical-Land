@@ -1,7 +1,7 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "top.csituka.magicaland.mixin",
+  "package": "top.elysianherd.magicaland.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
     "top.elysianherd.magicaland.mixin.PlayerStepSoundMixin"

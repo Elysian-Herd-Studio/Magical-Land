@@ -1,6 +1,6 @@
 # Magical Land API v1.6
 
-Magical Land 0.3.6 通过 `top.csituka.magicaland.api` 和 `top.csituka.magicaland.api.client` 提供公共接口，当前配套 Gameplay 0.3.4。扩展通过这些接口对接主模组；配置、渲染、动画状态和同步缓存属于内部实现。
+Magical Land 0.3.6 通过 `top.elysianherd.magicaland.api` 和 `top.elysianherd.magicaland.api.client` 提供公共接口，当前配套 Gameplay 0.3.4。扩展通过这些接口对接主模组；配置、渲染、动画状态和同步缓存属于内部实现。
 
 `ApiVersion` 位于主源码集，只依赖 Java 标准库，可在独立服务端安全查询。`.api.client` 下的接口仅供客户端使用：查询、注册和 `playTransformation` 必须在客户端线程执行，绘制接口必须在渲染线程执行。本 API 不授予玩法能力，也不提供可作为服务端判定依据的权威外观数据。
 
@@ -10,16 +10,16 @@ API 版本与模组版本独立。`ApiVersion.requireCompatible(1, 0)` 要求已
 
 独立持物视觉上下文与第三人称悬浮入口需要 `ApiVersion.requireCompatible(1, 1)`；魔法活动注册需要 `ApiVersion.requireCompatible(1, 2)`；随实体运动的光焰入口需要 `ApiVersion.requireCompatible(1, 3)`；角翅覆盖与变身光尘需要 `ApiVersion.requireCompatible(1, 4)`；独立飞行表现需要 `ApiVersion.requireCompatible(1, 5)`；完整飞行姿态需要 `ApiVersion.requireCompatible(1, 6)`。已有方法签名继续兼容。
 
-发布坐标为 `top.csituka:magicaland:0.3.6`。编译时依赖带 `api` 分类标识（classifier）的产物，运行时依赖完整主模组。扩展应与主模组使用相同的 Minecraft 1.20.1、Fabric 和映射版本。通过 Loom 引用重映射后的 API 产物，Loom 会将其中的 Minecraft 类型签名转换为扩展开发环境所用的命名空间。
+发布坐标为 `top.elysianherd:magicaland:0.3.6`。编译时依赖带 `api` 分类标识（classifier）的产物，运行时依赖完整主模组。扩展应与主模组使用相同的 Minecraft 1.20.1、Fabric 和映射版本。通过 Loom 引用重映射后的 API 产物，Loom 会将其中的 Minecraft 类型签名转换为扩展开发环境所用的命名空间。
 
 ```groovy
-modCompileOnly "top.csituka:magicaland:0.3.6:api"
-modRuntimeOnly "top.csituka:magicaland:0.3.6"
+modCompileOnly "top.elysianherd:magicaland:0.3.6:api"
+modRuntimeOnly "top.elysianherd:magicaland:0.3.6"
 ```
 
 `api` JAR 仅用于编译。不要将它放入 `mods` 文件夹、通过 `include` 嵌套打包、合并打包（shade），或把其中的类复制进扩展。运行时由完整 Magical Land JAR 提供公共 API、实现及服务端同步功能。
 
-API 产物包含 `top/csituka/magicaland/api/**` 下的全部类文件，包括嵌套枚举类。v1.6 具体包含 `ApiVersion`、`Registration`、`AppearanceSnapshot`、`Appearances`、`AppearanceOverrides`、`AppearanceOverrides$Visibility`、`AppearanceVisuals`、`ItemVisualContext`、`AnatomyOverride`、`FlightPose` 和 `FlightPose$Mode`。它不包含 `client/api` 内部桥接实现、`ModelConfig`、渲染内部类、网络类、Mixin 或资源。公共方法签名只使用 Java、Minecraft、游戏自带的 JOML 或 API 自身的类型。`api-sources` 分类产物包含相应的公共源码；完整源码产物供主模组开发使用。
+API 产物包含 `top/elysianherd/magicaland/api/**` 下的全部类文件，包括嵌套枚举类。v1.6 具体包含 `ApiVersion`、`Registration`、`AppearanceSnapshot`、`Appearances`、`AppearanceOverrides`、`AppearanceOverrides$Visibility`、`AppearanceVisuals`、`ItemVisualContext`、`AnatomyOverride`、`FlightPose` 和 `FlightPose$Mode`。它不包含 `client/api` 内部桥接实现、`ModelConfig`、渲染内部类、网络类、Mixin 或资源。公共方法签名只使用 Java、Minecraft、游戏自带的 JOML 或 API 自身的类型。`api-sources` 分类产物包含相应的公共源码；完整源码产物供主模组开发使用。
 
 ## 只读外观查询
 

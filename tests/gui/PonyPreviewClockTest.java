@@ -1,4 +1,4 @@
-package top.csituka.magicaland.client.model;
+package top.elysianherd.magicaland.client.model;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -8,7 +8,7 @@ import java.util.UUID;
 import software.bernie.geckolib.constant.DataTickets;
 import software.bernie.geckolib.core.animation.AnimatableManager;
 import software.bernie.geckolib.core.animation.AnimationState;
-import top.csituka.magicaland.client.animation.PonyIdleEars;
+import top.elysianherd.magicaland.client.animation.PonyIdleEars;
 
 public final class PonyPreviewClockTest {
     private static int checks;
@@ -93,9 +93,9 @@ public final class PonyPreviewClockTest {
     }
 
     private static void sourceContract(Path root) throws Exception {
-        String custom = Files.readString(root.resolve("src/client/java/top/csituka/magicaland/client/gui/PonyCustom.java"));
-        String preview = Files.readString(root.resolve("src/client/java/top/csituka/magicaland/client/model/PonyPreviewAnimatable.java"));
-        String renderer = Files.readString(root.resolve("src/client/java/top/csituka/magicaland/client/gui/ponycustom/PonyPreviewRenderer.java"));
+        String custom = Files.readString(root.resolve("src/client/java/top/elysianherd/magicaland/client/gui/PonyCustom.java"));
+        String preview = Files.readString(root.resolve("src/client/java/top/elysianherd/magicaland/client/model/PonyPreviewAnimatable.java"));
+        String renderer = Files.readString(root.resolve("src/client/java/top/elysianherd/magicaland/client/gui/ponycustom/PonyPreviewRenderer.java"));
         String init = custom.substring(custom.indexOf("private void initRenderer()"), custom.indexOf("private void renderGrassBlockPreview"));
         check(init.contains("if (ponyRenderer == null)"), "page/color reinit reuses preview instance");
         check(custom.contains("ponyRenderer.close()") && custom.contains("ponyRenderer = null;")
@@ -108,7 +108,7 @@ public final class PonyPreviewClockTest {
                 "preview reuses authored probabilistic ear variants rather than fixed old loop");
         check(renderer.contains("try (var gaze = PonyGuiGaze.begin(this, ponyAnimatable.getPlayer(), mouseX, mouseY,"),
                 "mouse gaze is scoped to the main pony draw");
-        String thumbnails = Files.readString(root.resolve("src/client/java/top/csituka/magicaland/client/gui/ponycustom/PonyStyleThumbnails.java"));
+        String thumbnails = Files.readString(root.resolve("src/client/java/top/elysianherd/magicaland/client/gui/ponycustom/PonyStyleThumbnails.java"));
         check(!thumbnails.contains("PonyPreviewAnimatable") && !thumbnails.contains("PonyGuiGaze.begin"), "static thumbnail path stays independent");
     }
 
