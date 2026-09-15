@@ -249,9 +249,6 @@ public final class MglCloudPresetScreen extends Screen {
         int contentWidth = Math.min(520, width - 24);
         int left = (width - contentWidth) / 2;
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 12, 0xFFFFFFFF);
-        if (MglSkinClient.isLoggedIn()) context.drawCenteredTextWithShadow(textRenderer,
-                textRenderer.trimToWidth(MglSkinClient.username(), Math.max(1, contentWidth - 232)),
-                width / 2, 36, 0xFFAAAAAA);
         if (skins.isEmpty() && (loading || connected)) context.drawCenteredTextWithShadow(textRenderer,
                 loading ? text("loading") : text("cloud_empty"),
                 width / 2, 54 + Math.max(20, height - 140) / 2 - 4, 0xFFAAAAAA);

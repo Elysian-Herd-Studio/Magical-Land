@@ -205,7 +205,6 @@
   "text.magicaland.mglskin.account_title": "账户信息",
   "text.magicaland.mglskin.account_edit": "编辑用户信息",
   "text.magicaland.mglskin.account_loading": "正在加载账户信息...",
-  "text.magicaland.mglskin.account_edit_hint": "在浏览器修改资料后，回到这里点击“刷新”。",
   "text.magicaland.mglskin.account_open_error": "无法打开账户信息页面",
   "text.magicaland.mglskin.avatar_error": "头像加载失败，点击“刷新”重试",
   "text.magicaland.mglskin.logout": "退出登录",

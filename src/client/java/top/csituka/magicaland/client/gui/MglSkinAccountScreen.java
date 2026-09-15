@@ -84,11 +84,11 @@ public final class MglSkinAccountScreen extends Screen {
             if (profile.hasAvatar()) {
                 MglSkinClient.fetchAvatar(data -> {
                     if (!currentRequest(version)) return;
-                    finishLoad(text(loadAvatar(data) ? "account_edit_hint" : "avatar_error"));
+                    finishLoad(loadAvatar(data) ? Text.empty() : text("avatar_error"));
                 }, error -> {
                     if (currentRequest(version)) finishLoad(Text.literal(error));
                 });
-            } else finishLoad(text("account_edit_hint"));
+            } else finishLoad(Text.empty());
         }, error -> {
             if (currentRequest(version)) finishLoad(Text.literal(error));
         });
@@ -131,7 +131,7 @@ public final class MglSkinAccountScreen extends Screen {
 
     private void openEditor() {
         if (!sameAccount()) { close(); return; }
-        status = text("account_edit_hint");
+        status = Text.empty();
         MglSkinClient.openAccountPage(error -> status = Text.literal(error));
     }
 
