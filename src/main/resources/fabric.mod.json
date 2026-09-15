@@ -17,16 +17,16 @@
   "environment": "*",
   "entrypoints": {
     "fabric-datagen": [
-      "top.csituka.magicaland.client.DataGenerator"
+      "top.elysianherd.magicaland.client.DataGenerator"
     ],
     "client": [
-      "top.csituka.magicaland.client.Client"
+      "top.elysianherd.magicaland.client.Client"
     ],
     "main": [
-      "top.csituka.magicaland.Magical_Land"
+      "top.elysianherd.magicaland.Magical_Land"
     ],
     "modmenu": [
-      "top.csituka.magicaland.client.ModMenuIntegration"
+      "top.elysianherd.magicaland.client.ModMenuIntegration"
     ]
   },
   "mixins": [
