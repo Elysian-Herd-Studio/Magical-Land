@@ -2093,56 +2093,6 @@
       "slope": 0.14388489208633093
     },
     {
-      "uuid": "a3583f17-d719-c060-8986-d22cb729065e",
-      "bone": "Style07FrontMane02",
-      "part": "FRONT",
-      "style": "07",
-      "axis": 2,
-      "center": -8.29319,
-      "u": 0.2880665570214492,
-      "slope": 0.14184397163120568
-    },
-    {
-      "uuid": "4dc7655f-03b4-c691-279e-4b901e345599",
-      "bone": "Style07FrontMane02",
-      "part": "FRONT",
-      "style": "07",
-      "axis": 2,
-      "center": -5.95425,
-      "u": 0.2762723471322668,
-      "slope": 0.1438848920863309
-    },
-    {
-      "uuid": "a0d26782-de4e-6dec-5e92-cf8b9c473155",
-      "bone": "Style07FrontManeHighlight",
-      "part": "FRONT",
-      "style": "07",
-      "axis": 2,
-      "center": -8.95917,
-      "u": 0.1645859041808134,
-      "slope": 0.1512628695001183
-    },
-    {
-      "uuid": "d080989c-6c0d-8758-b485-51b67d4c93b5",
-      "bone": "Style07FrontManeHighlight",
-      "part": "FRONT",
-      "style": "07",
-      "axis": 2,
-      "center": -8.95917,
-      "u": 0.16458247166281265,
-      "slope": 0.1512628695001183
-    },
-    {
-      "uuid": "0c8b7097-1f0b-ecf6-efc4-71d6b7e45a94",
-      "bone": "Style07FrontManeHighlight",
-      "part": "FRONT",
-      "style": "07",
-      "axis": 2,
-      "center": -7.6328700000000005,
-      "u": 0.20691236833819804,
-      "slope": 0.1399093468445947
-    },
-    {
       "uuid": "ee6ff6df-eff9-7663-bfb7-c80026c96751",
       "bone": "Style07Tail",
       "part": "TAIL",

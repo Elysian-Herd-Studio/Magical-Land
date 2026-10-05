@@ -37,6 +37,8 @@ public class PonyRenderer extends GeoObjectRenderer<GeckoPlayerAnimatable> {
     private PonyVisibility bodyVisibility = PonyVisibility.VISIBLE;
     private boolean usingPalette;
     private boolean mirroredMane;
+    private ManeSurfaceMasks.Mesh maneSurfaces;
+    private ManeTintTextures.Surface maneSurfaceTexture;
     private VertexConsumerProvider eyeBuffers;
     private RenderLayer eyeLayer, pupilLayer;
     private EyeApertureRender eyeAperture;
@@ -229,8 +231,15 @@ public class PonyRenderer extends GeoObjectRenderer<GeckoPlayerAnimatable> {
             String name = bone.getName().toLowerCase();
             // 翅膀使用身体图集，只有鬃毛和尾巴使用第二张贴图。
             boolean isOther = name.contains("mane") || name.contains("tail");
+            ManePalette.Part manePart = isOther ? ManePalette.partForBone(bone.getName()) : null;
+            ManeSurfaceMasks.Mesh surfaces = config != null && manePart != null
+                    && ManeDye.enabled(config, manePart) && shouldRenderSelectedMane(bone.getName())
+                    ? ManeSurfaceMasks.forBone(bone) : null;
+            ManeTintTextures.Surface surfaceTexture = surfaces == null ? null : ManeTintTextures.getSurface(config, bone.getName());
+            if (surfaceTexture == null) surfaces = null;
             Identifier texture = isOther ? PONY_TS : PONY_BASE;
-            Identifier palette = isOther ? ManeTintTextures.get(config, bone.getName())
+            Identifier palette = surfaceTexture != null ? surfaceTexture.texture()
+                    : isOther ? ManeTintTextures.get(config, bone.getName())
                     : EyeMaterials.isEyeBone(bone.getName()) ? EyeTintTextures.get(config, false) : null;
             if (palette == null && !isOther)
                 palette = BodyTintTextures.get(config, BodyTintTextures.colorForBone(config, bone.getName()), bone.getName());
@@ -241,6 +250,8 @@ public class PonyRenderer extends GeoObjectRenderer<GeckoPlayerAnimatable> {
             VertexConsumer newBuffer = bufferSource.getBuffer(newRenderType);
             if (bodyAuraCapture != null && !isReRender) newBuffer = bodyAuraCapture.wrap(newBuffer, texture);
             boolean previousPalette = usingPalette;
+            ManeSurfaceMasks.Mesh previousSurfaces = maneSurfaces;
+            ManeTintTextures.Surface previousSurfaceTexture = maneSurfaceTexture;
             VertexConsumerProvider previousBuffers = eyeBuffers;
             RenderLayer previousEye = eyeLayer, previousPupil = pupilLayer;
             EyeApertureRender previousAperture = eyeAperture;
@@ -254,6 +265,8 @@ public class PonyRenderer extends GeoObjectRenderer<GeckoPlayerAnimatable> {
                 if (auraCapture != null) auraCapture.layers.add(pupilLayer);
             }
             usingPalette = palette != null;
+            maneSurfaces = surfaces;
+            maneSurfaceTexture = surfaceTexture;
             try {
                 super.renderRecursively(poseStack, animatable, bone, newRenderType, bufferSource, newBuffer, isReRender,
                         partialTick, packedLight, packedOverlay, red, green, blue, alpha);
@@ -280,6 +293,8 @@ public class PonyRenderer extends GeoObjectRenderer<GeckoPlayerAnimatable> {
                 }
             } finally {
                 usingPalette = previousPalette;
+                maneSurfaces = previousSurfaces;
+                maneSurfaceTexture = previousSurfaceTexture;
                 eyeBuffers = previousBuffers;
                 eyeLayer = previousEye;
                 pupilLayer = previousPupil;
@@ -291,6 +306,9 @@ public class PonyRenderer extends GeoObjectRenderer<GeckoPlayerAnimatable> {
     @Override
     public void createVerticesOfQuad(GeoQuad quad, Matrix4f matrix, Vector3f normal, VertexConsumer buffer,
             int light, int overlay, float red, float green, float blue, float alpha) {
+        if (maneSurfaces != null && maneSurfaceTexture != null
+                && maneSurfaces.emit(quad, matrix, normal, buffer, light, overlay, red, green, blue, alpha,
+                        mirroredMane, maneSurfaceTexture.slots(), maneSurfaceTexture.columns(), maneSurfaceTexture.rows())) return;
         if (mirroredMane) ManeMirror.emitReversed(quad, matrix, normal, buffer, light, overlay, red, green, blue, alpha);
         else super.createVerticesOfQuad(quad, matrix, normal, buffer, light, overlay, red, green, blue, alpha);
     }
